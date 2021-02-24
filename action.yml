@@ -1,0 +1,23 @@
+name: List folders
+description: list all folders as json array
+inputs:
+  path:
+    description: Path to search
+    required: false
+    default: $GITHUB_WORKSPACE
+outputs:
+  result:
+    description: Array of strings, containing folder names
+    value: ${{ steps.list.outputs.contents }}
+runs:
+  using: "composite"
+  steps:
+    - run: cd "${{ inputs.path }}"
+      shell: bash
+    - id: list
+      shell: bash
+      run: >
+        jq -nc --arg data "$(
+          ls -d */ | sed 's#/$##'
+        )" '$data | split("\n")' |
+        (echo -n "::set-output name=contents::" && cat)
